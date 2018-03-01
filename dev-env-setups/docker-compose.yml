@@ -1,0 +1,59 @@
+version: '2'
+services:
+  nginx:
+    build: ./
+    links:
+        - ming-web:ming-web
+        - ming-api:ming-api
+    ports:
+        - "80:80"
+    volumes:
+      - ./:/etc/nginx
+      - ./nginx.conf:/etc/nginx/nginx.conf
+
+  postgres:
+    image: postgres:9.5
+    restart: unless-stopped
+    environment:
+      PGDB_DB: ming
+      PGDB_USER: postgres
+      PGDB_PASS: $POSTGRES_ROOT_PASSWORD
+    ports:
+      - "$POSTGRES_PORT:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+
+  # Unit 2 - API and Web frontend (API + nginx-web). Needs access to shared storage.
+  ming-api:
+    restart: unless-stopped
+    build:
+      context: ../ming-api
+    environment:
+      NODE_ENV: production
+      BASE_URL: $BASE_URL
+      API_URL: $API_URL
+      PORT: 1338
+      PGDB_TCP_PORT: "5432"
+      PGDB_TCP_HOST: postgres
+      PGDB_USER: "postgres"
+      PGDB_PASS: $POSTGRES_ROOT_PASSWORD
+      PGDB_DB: "ming"
+      PGDB_MAX_CLIENTS: 10
+      PGDB_MIN_CLIENTS: 5
+      PGDB_TIMEOUT: 30000
+
+    links:
+      - postgres
+    ports:
+      - "$API_PORT:1338"
+
+  # Temporary until we finish making this a static-only app
+  ming-web:
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+    build: ../ming-web
+    ports:
+      - "3000:3000"
+    links:
+      - ming-api

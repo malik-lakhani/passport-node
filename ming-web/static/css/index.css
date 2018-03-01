@@ -1,0 +1,81 @@
+.navbar li a {
+	color: white;
+}
+
+.navbar li a:hover {
+	background-color: black;
+}
+
+.form-wrapper {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.login-head {
+	display: flex;
+	justify-content: center;
+	align-content: center;
+	align-items: center;
+	align-self: center;
+}
+
+.login-form {
+	border-right: thin solid grey;
+}
+
+.facebook {
+	height: 34px;
+	border: thin solid #3B5998;
+	margin-bottom: 30px;
+	color: #3B5998;
+	background-color: white;
+	display: flex;
+    align-items: center;
+}
+
+.google {
+	height: 34px;
+	border: thin solid #d34836;
+	color: #d34836;
+	background-color: white;
+	display: flex;
+    align-items: center;
+}
+.facebook-image {
+	background-color: #3B5998;
+}
+.gplus-image {
+	background-color: #d34836;
+}
+.login-text {
+	margin: auto
+}
+.navbar {
+	background-color: black;
+}
+.login-button {
+	width: 100px;
+    height: 35px;
+    border: thin solid darkturquoise;
+    border-radius: 25px;
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    color: darkturquoise;
+}
+.login-button button {
+	background-color: transparent;
+	border: none;
+}
+
+@media screen and (max-width: 992px) {
+	.form-wrapper {
+		display: block;
+	}
+	.login-form {
+		border: none;
+	}
+	.social-login {
+		margin-top: 50px;
+	}
+}
