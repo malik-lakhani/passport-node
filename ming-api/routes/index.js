@@ -2,6 +2,7 @@ var express = require('express');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+var OAuth2Strategy = require('passport-oauth2').Strategy;
 var router = express.Router();
 var UsersController = require('../controllers/UsersController.js')
 
@@ -16,6 +17,17 @@ router.get('/auth/status', function (req, res, next) {
   console.log("req", req.session)
   res.send({ isLogin: true, user: req.session.passport.user });
 })
+
+router.get('/auth/example',
+  passport.authenticate('oauth2', { scope:
+    ['offline_access', 'users.read', 'teams.read', 'bills.read', 'webhooks.create', 'webhooks.delete', 'creditors.read',' teams.categories.create']}));
+
+router.get('/',
+  passport.authenticate('oauth2', { failureRedirect: '/login' }),
+  function(req, res) {
+    // Successful authentication, redirect home.
+    res.redirect('/auth/status');
+  });
 
 router.post('/auth/local', function(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
