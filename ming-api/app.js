@@ -10,7 +10,7 @@ var LocalStrategy = require('passport-local').Strategy;
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 var UsersController = require('./controllers/UsersController.js');
 var FacebookStrategy = require('passport-facebook').Strategy;
-
+var OAuth2Strategy = require('passport-oauth2').Strategy;
 
 require('dotenv').config()
 
@@ -33,21 +33,34 @@ app.use(require('express-session')({ secret: 'cat', resave: true, saveUninitiali
   cookie: { maxAge: 60000000 } }));
 
 passport.use(new LocalStrategy({
-	usernameField: 'email',
+  usernameField: 'email',
     passwordField: 'password'
-	},
-  	function(email, password, done) {
-	    return UsersController.findByUser(email, password, 'local')
-	    .then((user) => {
-	      if (!user) {
-	        return done(null, false, { message: 'Incorrect username.' });
-	      }
-	      return done(null, user);
-	    })
-	    .catch((err) => {
-	      if (err) { return done(err); }
-	    });
-	  }
+  },
+    function(email, password, done) {
+      return UsersController.findByUser(email, password, 'local')
+      .then((user) => {
+        if (!user) {
+          return done(null, false, { message: 'Incorrect username.' });
+        }
+        return done(null, user);
+      })
+      .catch((err) => {
+        if (err) { return done(err); }
+      });
+    }
+));
+
+passport.use(new OAuth2Strategy({
+    clientID: process.env.OAUTH_clientID,
+    authorizationURL: process.env.OAUTH_authorizationURL,
+    tokenURL: process.env.OAUTH_tokenURL,
+    clientSecret: process.env.OAUTH_clientSecret,
+    callbackURL: process.env.OAUTH_callbackURL
+  },
+  function(accessToken, refreshToken, profile, cb) {
+   console.log(accessToken, refreshToken, profile);
+   cb(null, {userid: 1})
+  }
 ));
 
 passport.use(new GoogleStrategy({
@@ -57,7 +70,7 @@ passport.use(new GoogleStrategy({
     scope: ['email']
   },
   function(accessToken, refreshToken, profile, done) {
-  	console.log("profile", profile)
+    console.log("profile", profile)
     return UsersController
       .findOrCreateByGoogle(profile)
       .then((response) => {
@@ -76,8 +89,8 @@ passport.use(new FacebookStrategy({
     profileFields: ['id','email', 'name', 'profileUrl', 'displayName']
   },
   function(accessToken, refreshToken, profile, done) {
-  	console.log("profile", profile)
-  	return UsersController
+    console.log("profile", profile)
+    return UsersController
       .findOrCreateByFacebook(profile)
       .then((response) => {
         done(null, response);
@@ -98,19 +111,19 @@ passport.serializeUser(function(user, cb) {
 });
 
 passport.deserializeUser(function(user, cb) {
-  return UsersController.findById(user.id, user.provider)
-  .then((user) => {
-    cb(null, user);
-  })
-  .catch((err) => {
-    if (err) { return cb(err); }
-  });
+  // return UsersController.findById(user.id, user.provider)
+  // .then((user) => {
+    cb(null, {userid: 1});
+  // })
+  // .catch((err) => {
+  //   if (err) { return cb(err); }
+  // });
 });
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/api', index);
+app.use('/', index);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
